@@ -84,6 +84,10 @@ public class UnityChanController : MonoBehaviour
     private float upForce = 500.0f;
     //左右の移動できる範囲
     private float movableRange = 3.4f;
+    //動きを減衰させる係数
+    private float coefficient = 0.95f;
+    //ｹﾞｰﾑ終了判定
+    private bool isEnd = false;
 
     void Start()
     {
@@ -101,7 +105,15 @@ public class UnityChanController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //ｹﾞｰﾑ終了ならUnityちゃんの動きを減衰する
+        if (this.isEnd)
+        {
+            this.forwardForce *= this.coefficient;      //加える力に減衰係数をかけていく
+            this.turnForce *= this.coefficient;
+            this.upForce *= this.coefficient;
+            this.myAnimator.speed *= this.coefficient;
 
+        }
         //Unityちゃんに前方向の力を加える
         this.myRigidbody.AddForce(this.transform.forward * this.forwardForce);
 
@@ -130,6 +142,21 @@ public class UnityChanController : MonoBehaviour
             this.myAnimator.SetBool("Jump", true);
             //Unityちゃんに上方向の力を加える（追加）
             this.myRigidbody.AddForce(this.transform.up * this.upForce);
+        }
+        //トリガﾓｰﾄﾞで他のオブジェクトと接触した場合の処理
+        //「OnTrrigerEnter」関数は、自分のColliderが他のオブジェクトのColliderと接触した時に呼ばれる関数.引数には接触した相手のColliderが渡されます
+        void OntriggerEnter(Collider other)
+        {
+            //障害物に衝突
+            if(other.gameObject.tag=="CarTag" || other.gameObject.tag == "TrafficConeTag")
+            {
+                this.isEnd = true;
+            }
+            //ゴール
+            if (other.gameObject.tag == "GoalTag") {
+                this.isEnd = true;
+            }
+
         }
     }
 }
